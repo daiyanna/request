@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>axios</title>
+</head>
+<body>
+    <button id="J_Button">111111</button>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        axios.defaults.baseURL = 'https://www.baidu.com';
+
+        // 模块  初始化->生成->发送->处理
+        var isLoading = false; // 如果是myAxios作用域里面的变量每次访问都会初始化，不会保留记录 false表示不在请求中
+        function myAxios(config){
+            function _myAxios(config){
+                config = config || {}; // 当config不传的时候让config.url不报错
+
+                this.url = config.url;
+                this.type = config.type || 'post';
+                this.data = config.data || {};
+                this.success = config.success || 'default';
+                this.reSubmit = config.reSubmit || true;
+                this.operatorObj = config.operatorObj || null;  // 用this的其他变量来赋值, 不影响_myAxios中的this
+                this.isBlock = config.isBlock || false; 
+            }
+            _myAxios.prototype.getAxios = function(){
+                var p = axios({
+                    method: this.type,
+                    url: this.url,
+                    data: this.data,
+                    headers: {'token': 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJwYzoxNzgiLCJpc3MiOiJFRFMiLCJpYXQiOjE1NjY4MDc1NzZ9.GxhUK8-rMrqRNHDqNBYqf8GVspwFLgWjSuax4ZKNT_A'},
+                });
+                return p;
+            }
+            _myAxios.prototype.sendAxios = function(){
+                var isBlock = this.isBlock;
+                // 需要防止重复提交 且 请求中
+                if(isBlock && isLoading) {
+                    return false;
+                }
+                var self = this;
+                isBlock ? isLoading = true : isLoading = false;
+
+                var p = this.getAxios();
+                p.then(function(res){
+                    isBlock ? isLoading = false : isLoading = false;
+                    if(res.status === 200){ //成功
+                        if(res.code===200){
+                            if(this.success!=='default') {
+                                success.call(this.operatorObj, res.data);
+                            } else {
+                                this.handleAxios(res.data);
+                            }
+                        } else { // 请求成功服务器没有数据响应
+                            console.log(res.msg || '响应失败');
+                        }
+                    } else { // 状态码非200成功状态
+                        console.log(res.msg || '请求错误')
+                    }
+                }).catch(function(rej){
+                    setTimeout(function(){
+                        isBlock ? isLoading = false : isLoading = false;
+                    }, 3000)
+                    
+                    console.log('服务器开小差');
+                })
+            }
+            _myAxios.prototype.handleAxios = function(data){
+                this.operatorObj.innerHTML = data;
+            }
+
+            var _axios = new _myAxios(config);    // 直接初始化以后return减少调用的时候原生操作
+            _axios.sendAxios();
+            console.log('8', _axios)
+            // return _axios;
+        }
+
+        // api.js 
+        // export default api
+        const api = {
+            apiOne: function(operatorObj){
+                myAxios({
+                    url: '/sugrec',
+                    data: {
+                        mobile: "13810027834", 
+                        newName: 'feng'
+                    },
+                    type: 'post',
+                    operatorObj: operatorObj || null,
+                    isBlock: true // 配置重复提交
+                })
+            }
+        };
+
+
+
+        // vue请求和数据绑定自动化, 在config传入一个dataname字段来关联data中的字段 传入this去设置this[datatname]就可以设置data
+
+        // 调用 把接口名化为api调用该方法即直接请求接口
+        document.getElementById('J_Button').onclick = function() {
+            api.apiOne(this);
+        }
+
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ajax</title>
+</head>
+<body>
+
+    <p>用户名：<input type="text" id="J_UserName"></p>
+    <p>头像：<input type="file" id="J_File" multiple="true"></p>
+
+    <button id="J_Button">提交</button>
+
+    <script>
+        document.getElementById('J_Button').onclick = function(){
+            var data = {
+                mobile: "13810027834", 
+                newName: document.getElementById('J_UserName').value
+            };
+
+            var formData = new FormData();
+            formData.append('mobile', '13810027834')
+            formData.append('newName', document.getElementById('J_UserName').value)
+            formData.append('uploadSingleFile', document.getElementById('J_File').files[0])  //获取上传的文件 格式为二进制流
+            formData.append('uploadSingleFile', document.getElementById('J_File').files[1])  //获取上传的文件 格式为二进制流
+
+            likeAjax('http://localhost:2019/submit', formData)
+        }
+
+        function likeAjax1(url, data){
+            var xhr = new XMLHttpRequest();
+            xhr.open('post', url, true);
+            xhr.setRequestHeader('token', 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJwYzoxNzgiLCJpc3MiOiJFRFMiLCJpYXQiOjE1NjY4MDc1NzZ9.GxhUK8-rMrqRNHDqNBYqf8GVspwFLgWjSuax4ZKNT_A')
+            
+            // 使用json发送数据
+            // xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8'); //参数使用JSON.stringify(js对象)
+            // xhr.send( JSON.stringify(data) );
+
+            // 使用form表单提交数据
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8')  //参数使用param = "mobile=13810027834&newName=11"
+            var param = '';
+            for(var i in data){
+                param += (param ? '&' : '') + i+'='+data[i];
+            }
+            xhr.send( param );
+
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState===4 && xhr.status===200){
+                    console.log(JSON.parse(xhr.responseText).msg)
+                }
+            }
+        }
+        function likeAjax(url, data) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('post', url, true);
+            xhr.setRequestHeader('token', 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJwYzoxNzgiLCJpc3MiOiJFRFMiLCJpYXQiOjE1NjY4MDc1NzZ9.GxhUK8-rMrqRNHDqNBYqf8GVspwFLgWjSuax4ZKNT_A')
+            // xhr.setRequestHeader('Content-Type', 'multipart/form-data;charset=UTF-8')  // 参数可以使用FormData 当参数为FormData的时候type参数可以不用写
+            xhr.send( data );
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState===4 && xhr.status===200) {
+                    console.log(JSON.parse(xhr.responseText).msg)
+                }
+            }
+        }
+    </script>
+    
+</body>
+</html>
